@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Spatial Data Extraction Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a single-page interactive dashboard. The structure flows logically from top to bottom: an introduction stating the problem, a methodology section introducing the models, an interactive performance dashboard for model comparison, and a conclusion outlining future work. The core interaction allows users to click on a model's name to dynamically update both the main comparison chart and a detailed text panel. This structure was chosen to guide the user through the research narrative—from problem to solution to future—while allowing them to interactively explore the results without being overwhelmed, which is more user-friendly than a linear slide-by-slide presentation. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Model performance metrics (Precision, Recall, F1-Score). Goal: Compare. Viz/Method: Interactive Bar Chart (Chart.js). Interaction: Clicking a model button highlights its data and updates a detailed analysis panel. Justification: A bar chart provides the clearest visual comparison for discrete categories. The interaction allows for a deep dive into qualitative analysis without cluttering the initial view. Library: Chart.js (Canvas).
+        - Report Info: Problem statement, methodology, model analysis, improvement plans, conclusion. Goal: Inform/Explain. Viz/Method: Structured HTML text blocks with clear typography and cards. Interaction: Text content in the analysis panel is dynamically updated via JavaScript based on user selection. Justification: This keeps the interface clean and focused, presenting only relevant information at a time. Method: Tailwind CSS, Vanilla JS.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 45vh;
+            max-height: 450px;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #A37F64;
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px 0 rgba(163, 127, 100, 0.39);
+        }
+        .nav-button:not(.active):hover {
+            background-color: #EAE3DD;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#A37F64] mb-3">Spatial Data Extraction from Unstructured Text</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive analysis by Abodo E. Brice Donald</p>
+        </header>
+
+        <main>
+            <section id="introduction" class="mb-16 bg-white p-8 rounded-2xl shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">The Challenge: Unlocking Geospatial Data</h2>
+                <p class="text-base md:text-lg leading-relaxed text-gray-700">
+                    In our data-driven world, millions of social media posts, news articles, and messages are generated daily, containing a vast amount of valuable geospatial information. However, this information is often locked away in unstructured text, making it inaccessible to automated systems. Manual processing is inefficient and unscalable. This project tackles the challenge by developing and evaluating machine learning methods to automate the extraction of location entities, turning raw text into structured, actionable insights with significant applications in emergency response, urban analytics, and targeted marketing.
+                </p>
+            </section>
+            
+            <section id="methodology" class="mb-16 bg-white p-8 rounded-2xl shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Methodology: A Comparative Study of NER Models</h2>
+                <p class="text-base md:text-lg leading-relaxed text-gray-700 mb-6">
+                    To find the most effective method for location extraction, we designed a comparative study of three distinct Natural Language Processing (NLP) models. This approach allows for a comprehensive evaluation of the trade-offs between pre-trained systems, custom deep learning models, and large language models (LLMs). The models were evaluated on a composite dataset of approximately 60,363 tokens, where location tokens represent only about 1.3% of the data—a significant class imbalance.
+                </p>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="border border-gray-200 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">spaCy</h3>
+                        <p class="text-gray-600">An industry-standard, pre-trained NER model enhanced with custom rules for robust, out-of-the-box performance.</p>
+                    </div>
+                    <div class="border border-gray-200 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">BiLSTM-CRF</h3>
+                        <p class="text-gray-600">A custom-trained deep learning model using a Bi-directional LSTM for context and a CRF layer for logical tag sequencing.</p>
+                    </div>
+                    <div class="border border-gray-200 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">Mistral</h3>
+                        <p class="text-gray-600">A powerful LLM (`Mistral-7B-Instruct-v0.2`) leveraged via prompt engineering to identify locations in a zero-shot manner.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="dashboard" class="mb-16">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Performance Dashboard</h2>
+
+                <div class="flex justify-center mb-8 space-x-2 md:space-x-4">
+                    <button id="spacyBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">spaCy</button>
+                    <button id="mistralBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">Mistral</button>
+                    <button id="bilstmcrfBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">BiLSTM-CRF</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm mb-8">
+                     <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="details-panel" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div id="spacyDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm"></div>
+                    <div id="mistralDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm hidden"></div>
+                    <div id="bilstmcrfDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm hidden"></div>
+                    
+                    <div id="improvement-panel" class="bg-white p-8 rounded-2xl shadow-sm"></div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="bg-white p-8 rounded-2xl shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Conclusion & Future Work: A System for the Russian Language</h2>
+                <div class="space-y-4 text-base md:text-lg text-gray-700 leading-relaxed">
+                    <p>
+                        This work successfully implemented and evaluated three distinct approaches to spatial data extraction. The <strong>spaCy</strong> pipeline emerged as the most practical and highest-performing solution for immediate use. The analysis revealed that while powerful, deep learning models are highly dependent on data quality, and LLMs offer a promising but less precise alternative without extensive fine-tuning.
+                    </p>
+                    <p>
+                        The ultimate end goal of this research is to build a system that performs robustly on <strong>Russian addresses and in the Russian language</strong>. This next phase will focus on assembling a high-quality Russian dataset, adapting the most promising models, and developing strategies to handle the unique ambiguities of the Russian language. This foundational work has provided a clear methodology to pave the way for a state-of-the-art geoparsing system for Russian.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const modelData = {
+            spacy: {
+                metrics: { precision: 0.772, recall: 0.858, f1: 0.812 },
+                analysisTitle: "Analysis: spaCy (F1-Score: 0.812)",
+                analysisText: `This model is the clear winner. Its high <strong>Recall (0.858)</strong> is particularly valuable, as it means the model is excellent at finding most of the true locations and minimizes missed entities. The <strong>Precision (0.772)</strong> is strong but indicates some false positives—that is, the model sometimes identifies entities as locations when they are not.`,
+                improvementTitle: "Path to Improvement for spaCy",
+                improvementText: `The primary way to improve the spaCy model would be to reduce false positives. This can be achieved by <strong>fine-tuning the underlying model</strong> with a larger, more diverse dataset that includes "hard negative" examples (e.g., company names like "General Motors" that might be confused with cities). Additionally, <strong>expanding the rule-based component</strong> to explicitly exclude certain patterns could further increase precision.`
+            },
+            mistral: {
+                metrics: { precision: 0.624, recall: 0.531, f1: 0.574 },
+                analysisTitle: "Analysis: Mistral (F1-Score: 0.574)",
+                analysisText: `For a zero-shot, prompt-based approach, this performance is quite promising and demonstrates the inherent geographical knowledge within LLMs. However, its lower recall suggests it is too conservative and misses many locations.`,
+                improvementTitle: "Path to Improvement for Mistral",
+                improvementText: `The most direct path is through <strong>advanced prompt engineering</strong>, such as using a "few-shot" approach where the prompt includes several examples of correct extraction. For a more significant boost, <strong>fine-tuning the Mistral model</strong> on our specific NER dataset would adapt it to the task and likely yield substantial gains in both precision and recall.`
+            },
+            bilstmcrf: {
+                metrics: { precision: 0.196, recall: 0.127, f1: 0.154 },
+                analysisTitle: "Analysis: BiLSTM-CRF (F1-Score: 0.154)",
+                analysisText: `The model's poor performance is not an indictment of the architecture itself, but rather a clear indication of its sensitivity to data quality and quantity. The model severely underperformed due to the highly imbalanced dataset where only ~1.3% of tokens are locations. Deep learning models like this require vast amounts of balanced data to learn effectively.`,
+                improvementTitle: "Path to Improvement for BiLSTM-CRF",
+                improvementText: `The architecture is sound; the problem is the data. The first step is to <strong>assemble a much larger and more balanced training corpus.</strong> Techniques like <strong>data augmentation</strong> (e.g., back-translation, replacing locations) should be employed to artificially increase the number of positive examples. Without a better dataset, hyperparameter tuning will not fix the core issue.`
+            }
+        };
+
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        let performanceChart;
+
+        const chartColors = {
+            base: ['#D6C2B3', '#BFA695', '#A37F64'],
+            highlight: '#E53E3E'
+        };
+
+        const buttons = {
+            spacy: document.getElementById('spacyBtn'),
+            mistral: document.getElementById('mistralBtn'),
+            bilstmcrf: document.getElementById('bilstmcrfBtn')
+        };
+
+        const detailElements = {
+            spacy: document.getElementById('spacyDetails'),
+            mistral: document.getElementById('mistralDetails'),
+            bilstmcrf: document.getElementById('bilstmcrfDetails')
+        };
+        
+        const improvementPanel = document.getElementById('improvement-panel');
+
+        function createChart(highlightedModel = null) {
+            const labels = ['Precision', 'Recall', 'F1-Score'];
+            const datasets = Object.keys(modelData).map((key, index) => {
+                const model = modelData[key];
+                return {
+                    label: key.toUpperCase().replace('BILSTMCRF', 'BiLSTM-CRF'),
+                    data: [model.metrics.precision, model.metrics.recall, model.metrics.f1],
+                    backgroundColor: key === highlightedModel ? chartColors.highlight : chartColors.base[index],
+                    borderColor: key === highlightedModel ? chartColors.highlight : chartColors.base[index],
+                    borderWidth: 1,
+                    borderRadius: 5,
+                };
+            });
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            grid: {
+                                color: '#F0EBE6'
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        },
+                        x: {
+                             grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#4A4A4A',
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#4A4A4A',
+                            titleFont: {
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(3);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateView(modelKey) {
+            Object.keys(buttons).forEach(key => {
+                buttons[key].classList.remove('active');
+            });
+            buttons[modelKey].classList.add('active');
+
+            Object.keys(detailElements).forEach(key => {
+                detailElements[key].classList.add('hidden');
+            });
+
+            const selectedData = modelData[modelKey];
+            const detailElement = detailElements[modelKey];
+            
+            detailElement.innerHTML = `
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.analysisTitle}</h3>
+                <p class="text-base leading-relaxed text-gray-700">${selectedData.analysisText}</p>
+            `;
+            
+            improvementPanel.innerHTML = `
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.improvementTitle}</h3>
+                <p class="text-base leading-relaxed text-gray-700">${selectedData.improvementText}</p>
+            `;
+            
+            detailElement.classList.remove('hidden');
+            
+            createChart(); 
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buttons.spacy.addEventListener('click', () => updateView('spacy'));
+            buttons.mistral.addEventListener('click', () => updateView('mistral'));
+            buttons.bilstmcrf.addEventListener('click', () => updateView('bilstmcrf'));
+
+            updateView('spacy');
+        });
+
+    </script>
+</body>
+</html>
