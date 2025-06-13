@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Report: Spatial Data Extraction Analysis</title>
+    <title>Infographic: Spatial Data Extraction from Unstructured Text</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: The SPA is designed as a single-page interactive dashboard. The structure flows logically from top to bottom: an introduction stating the problem, a methodology section introducing the models, an interactive performance dashboard for model comparison, and a conclusion outlining future work. The core interaction allows users to click on a model's name to dynamically update both the main comparison chart and a detailed text panel. This structure was chosen to guide the user through the research narrative—from problem to solution to future—while allowing them to interactively explore the results without being overwhelmed, which is more user-friendly than a linear slide-by-slide presentation. -->
+    
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The SPA is structured as a narrative-driven, single-page infographic. It begins with a high-level introduction to the problem and its real-world relevance. It then flows into the core of the study: a 'Methodology' section introducing the three models, followed by an 'Interactive Performance Dashboard'. This dashboard is the application's centerpiece, featuring a central bar chart for direct model comparison. User interaction (clicking model buttons) dynamically updates both the chart and an adjacent 'Analysis' panel, providing deeper, context-specific insights. The page concludes with a visualization of the 'System Architecture' and a summary of 'Future Work'. This structure was chosen to guide the user logically through the research story—from problem to results to future implications—while empowering them to explore the data interactively at their own pace, making complex comparisons digestible. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: Model performance metrics (Precision, Recall, F1-Score). Goal: Compare. Viz/Method: Interactive Bar Chart (Chart.js). Interaction: Clicking a model button highlights its data and updates a detailed analysis panel. Justification: A bar chart provides the clearest visual comparison for discrete categories. The interaction allows for a deep dive into qualitative analysis without cluttering the initial view. Library: Chart.js (Canvas).
-        - Report Info: Problem statement, methodology, model analysis, improvement plans, conclusion. Goal: Inform/Explain. Viz/Method: Structured HTML text blocks with clear typography and cards. Interaction: Text content in the analysis panel is dynamically updated via JavaScript based on user selection. Justification: This keeps the interface clean and focused, presenting only relevant information at a time. Method: Tailwind CSS, Vanilla JS.
-        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+        - Report Info: Model performance metrics (Precision, Recall, F1-Score). Goal: Compare. Viz/Method: Interactive Bar Chart. Interaction: Clicking model-specific buttons highlights its data series on the chart and updates a separate text panel with detailed qualitative analysis for that model. Justification: This provides an immediate visual comparison while keeping the UI clean, allowing users to drill down into the analysis for the model they are interested in. Library: Chart.js (Canvas).
+        - Report Info: Dataset statistics (token count, percentage of location tokens). Goal: Inform. Viz/Method: 'Big Number' style text callouts. Interaction: None. Justification: These are key contextual stats that are best presented simply and with high impact to frame the problem's difficulty. Method: HTML/Tailwind CSS.
+        - Report Info: System architecture flowchart. Goal: Organize. Viz/Method: A visual flowchart recreated using structured HTML divs and styled with Tailwind CSS (flexbox, borders) to represent the flow of data through the API. Interaction: None. Justification: This adheres to the no-SVG/no-Mermaid constraint while providing a much clearer representation of the process than a text description alone. Method: HTML/Tailwind CSS.
+        - Report Info: Qualitative findings, model analysis, future plans. Goal: Explain. Viz/Method: Dynamically updated text panels within Material Design-style cards. Interaction: Content is updated based on user's model selection in the dashboard. Justification: This prevents information overload by showing only the relevant analysis for the selected model, enhancing comprehension. Method: Vanilla JS, HTML/Tailwind CSS.
     -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
-            color: #4A4A4A;
+            background-color: #F3F4F6;
+            color: #374151;
         }
         .chart-container {
             position: relative;
@@ -28,93 +32,154 @@
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            height: 45vh;
-            max-height: 450px;
+            height: 40vh;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .metric-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
         }
         .nav-button {
             transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
         .nav-button.active {
-            background-color: #A37F64;
+            background-color: #2563EB;
             color: #FFFFFF;
-            box-shadow: 0 4px 14px 0 rgba(163, 127, 100, 0.39);
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
         }
         .nav-button:not(.active):hover {
-            background-color: #EAE3DD;
+            border-color: #2563EB;
+            color: #2563EB;
+        }
+        .flowchart-box {
+            border: 2px solid #D1D5DB;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #FFFFFF;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .flowchart-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 4rem;
+            color: #6B7280;
+            font-size: 2rem;
+            font-weight: bold;
         }
     </style>
 </head>
 <body class="antialiased">
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#A37F64] mb-3">Spatial Data Extraction from Unstructured Text</h1>
-            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive analysis by Abodo E. Brice Donald</p>
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#2563EB] mb-4">Automating Spatial Data Extraction from Text</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">A Deep Dive into the Performance of Modern NLP Models for Geoparsing</p>
         </header>
 
-        <main>
-            <section id="introduction" class="mb-16 bg-white p-8 rounded-2xl shadow-sm">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">The Challenge: Unlocking Geospatial Data</h2>
-                <p class="text-base md:text-lg leading-relaxed text-gray-700">
-                    In our data-driven world, millions of social media posts, news articles, and messages are generated daily, containing a vast amount of valuable geospatial information. However, this information is often locked away in unstructured text, making it inaccessible to automated systems. Manual processing is inefficient and unscalable. This project tackles the challenge by developing and evaluating machine learning methods to automate the extraction of location entities, turning raw text into structured, actionable insights with significant applications in emergency response, urban analytics, and targeted marketing.
-                </p>
+        <main class="space-y-20">
+            <section id="introduction">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">The Challenge: From Unstructured Text to Actionable Insight</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="text-lg leading-relaxed space-y-4">
+                        <p>In our digital age, a massive volume of unstructured text is generated daily from sources like social media and news articles. Hidden within this text is valuable geospatial information, but manual extraction is inefficient and unscalable.</p>
+                        <p>This research tackles this problem by developing an automated system to extract location entities, turning raw text into structured data for critical applications like emergency response, urban planning, and business analytics.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6 text-center">
+                        <div class="metric-card">
+                            <span class="text-4xl font-bold text-[#2563EB]">~60k</span>
+                            <p class="text-gray-500 mt-2">Total Tokens in Evaluation Set</p>
+                        </div>
+                        <div class="metric-card">
+                            <span class="text-4xl font-bold text-[#F97316]">~1.3%</span>
+                            <p class="text-gray-500 mt-2">Location Tokens (Class Imbalance)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="methodology">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Methodology: A Three-Model Comparative Study</h2>
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="metric-card">
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-3">spaCy</h3>
+                        <p class="text-gray-600">An industry-standard NLP library using a pre-trained Named Entity Recognition (NER) model, enhanced with custom rules to boost performance on specific location formats. Represents a robust, production-ready baseline.</p>
+                    </div>
+                    <div class="metric-card">
+                         <h3 class="text-2xl font-semibold text-gray-800 mb-3">BiLSTM-CRF</h3>
+                        <p class="text-gray-600">A custom deep learning model combining a Bidirectional LSTM network to understand text context with a Conditional Random Field (CRF) layer to ensure the sequence of predicted location tags is logical and coherent.</p>
+                    </div>
+                    <div class="metric-card">
+                         <h3 class="text-2xl font-semibold text-gray-800 mb-3">Mistral</h3>
+                        <p class="text-gray-600">A powerful Large Language Model (`Mistral-7B-Instruct-v0.2`) utilized via prompt engineering, instructed to identify and return locations in a structured format without specific training on this task (zero-shot approach).</p>
+                    </div>
+                </div>
             </section>
             
-            <section id="methodology" class="mb-16 bg-white p-8 rounded-2xl shadow-sm">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Methodology: A Comparative Study of NER Models</h2>
-                <p class="text-base md:text-lg leading-relaxed text-gray-700 mb-6">
-                    To find the most effective method for location extraction, we designed a comparative study of three distinct Natural Language Processing (NLP) models. This approach allows for a comprehensive evaluation of the trade-offs between pre-trained systems, custom deep learning models, and large language models (LLMs). The models were evaluated on a composite dataset of approximately 60,363 tokens, where location tokens represent only about 1.3% of the data—a significant class imbalance.
-                </p>
-                <div class="grid md:grid-cols-3 gap-6 text-center">
-                    <div class="border border-gray-200 p-6 rounded-lg">
-                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">spaCy</h3>
-                        <p class="text-gray-600">An industry-standard, pre-trained NER model enhanced with custom rules for robust, out-of-the-box performance.</p>
-                    </div>
-                    <div class="border border-gray-200 p-6 rounded-lg">
-                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">BiLSTM-CRF</h3>
-                        <p class="text-gray-600">A custom-trained deep learning model using a Bi-directional LSTM for context and a CRF layer for logical tag sequencing.</p>
-                    </div>
-                    <div class="border border-gray-200 p-6 rounded-lg">
-                        <h3 class="text-xl font-semibold text-[#A37F64] mb-2">Mistral</h3>
-                        <p class="text-gray-600">A powerful LLM (`Mistral-7B-Instruct-v0.2`) leveraged via prompt engineering to identify locations in a zero-shot manner.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="dashboard" class="mb-16">
-                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Performance Dashboard</h2>
+            <section id="dashboard">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Interactive Performance Dashboard</h2>
 
                 <div class="flex justify-center mb-8 space-x-2 md:space-x-4">
-                    <button id="spacyBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">spaCy</button>
-                    <button id="mistralBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">Mistral</button>
-                    <button id="bilstmcrfBtn" class="nav-button font-medium py-2 px-4 rounded-full bg-white shadow-sm">BiLSTM-CRF</button>
+                    <button id="spacyBtn" class="nav-button font-medium py-3 px-6 rounded-full bg-white shadow-sm">spaCy</button>
+                    <button id="mistralBtn" class="nav-button font-medium py-3 px-6 rounded-full bg-white shadow-sm">Mistral</button>
+                    <button id="bilstmcrfBtn" class="nav-button font-medium py-3 px-6 rounded-full bg-white shadow-sm">BiLSTM-CRF</button>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
                      <div class="chart-container">
                         <canvas id="performanceChart"></canvas>
                     </div>
                 </div>
 
-                <div id="details-panel" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    <div id="spacyDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm"></div>
-                    <div id="mistralDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm hidden"></div>
-                    <div id="bilstmcrfDetails" class="model-details bg-white p-8 rounded-2xl shadow-sm hidden"></div>
-                    
-                    <div id="improvement-panel" class="bg-white p-8 rounded-2xl shadow-sm"></div>
+                <div id="details-panel" class="bg-white p-8 rounded-2xl shadow-lg">
+                    <div id="analysis-content">
+                    </div>
                 </div>
             </section>
 
-            <section id="conclusion" class="bg-white p-8 rounded-2xl shadow-sm">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Conclusion & Future Work: A System for the Russian Language</h2>
-                <div class="space-y-4 text-base md:text-lg text-gray-700 leading-relaxed">
-                    <p>
-                        This work successfully implemented and evaluated three distinct approaches to spatial data extraction. The <strong>spaCy</strong> pipeline emerged as the most practical and highest-performing solution for immediate use. The analysis revealed that while powerful, deep learning models are highly dependent on data quality, and LLMs offer a promising but less precise alternative without extensive fine-tuning.
-                    </p>
-                    <p>
-                        The ultimate end goal of this research is to build a system that performs robustly on <strong>Russian addresses and in the Russian language</strong>. This next phase will focus on assembling a high-quality Russian dataset, adapting the most promising models, and developing strategies to handle the unique ambiguities of the Russian language. This foundational work has provided a clear methodology to pave the way for a state-of-the-art geoparsing system for Russian.
-                    </p>
+            <section id="architecture">
+                 <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">System Architecture: API Request Flow</h2>
+                 <p class="text-center text-gray-600 max-w-2xl mx-auto mb-10">The system is designed as a multi-layered API using FastAPI. This flowchart illustrates the typical process of a request, from client submission to receiving a structured response. This modular design ensures efficient, single-instance loading of models and clear separation of concerns.</p>
+                 <div class="flex flex-col items-center space-y-2">
+                    <div class="flowchart-box">Client (Browser / cURL)</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Uvicorn ASGI Server</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">FastAPI App Instance</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Endpoint Function (e.g., /extract-with-spacy/)</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Service Function</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Loaders (Global model cache)</div>
+                    <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Model (spaCy or BiLSTM-CRF)</div>
+                     <div class="flowchart-arrow">&darr;</div>
+                    <div class="flowchart-box">Structured Output</div>
+                </div>
+            </section>
+
+            <section id="conclusion">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Conclusion & Future Work</h2>
+                <div class="max-w-4xl mx-auto text-lg leading-relaxed space-y-4 bg-white p-8 rounded-2xl shadow-lg">
+                    <p>This comparative study confirms that the <strong>spaCy pipeline is the most effective out-of-the-box solution</strong> for this task, achieving a strong balance of precision and recall. The research also highlights that deep learning models like BiLSTM-CRF are highly sensitive to data imbalance, while LLMs like Mistral show promise but require significant fine-tuning or advanced prompting to compete.</p>
+                    <p class="font-semibold text-[#2563EB]">The ultimate goal is to build a robust system for the Russian language.</p>
+                    <p>Future work will focus on three key areas: <strong>1) Assembling a large, high-quality Russian dataset</strong> for training and evaluation, <strong>2) Adapting and fine-tuning</strong> the most promising models (spaCy and a transformer architecture) on this new dataset, and <strong>3) Developing specific strategies</strong> to handle the unique grammatical and structural complexities of Russian addresses.</p>
                 </div>
             </section>
         </main>
@@ -123,25 +188,28 @@
     <script>
         const modelData = {
             spacy: {
+                label: 'spaCy',
                 metrics: { precision: 0.772, recall: 0.858, f1: 0.812 },
                 analysisTitle: "Analysis: spaCy (F1-Score: 0.812)",
-                analysisText: `This model is the clear winner. Its high <strong>Recall (0.858)</strong> is particularly valuable, as it means the model is excellent at finding most of the true locations and minimizes missed entities. The <strong>Precision (0.772)</strong> is strong but indicates some false positives—that is, the model sometimes identifies entities as locations when they are not.`,
+                analysisText: `This model is the clear winner. Its high <strong>Recall (0.858)</strong> is particularly valuable, meaning it is excellent at finding most true locations and minimizes missed opportunities. The <strong>Precision (0.772)</strong> is also strong, though it indicates some false positives (identifying non-locations as locations).`,
                 improvementTitle: "Path to Improvement for spaCy",
-                improvementText: `The primary way to improve the spaCy model would be to reduce false positives. This can be achieved by <strong>fine-tuning the underlying model</strong> with a larger, more diverse dataset that includes "hard negative" examples (e.g., company names like "General Motors" that might be confused with cities). Additionally, <strong>expanding the rule-based component</strong> to explicitly exclude certain patterns could further increase precision.`
+                improvementText: `The primary path to improvement is reducing false positives. This can be achieved by <strong>fine-tuning the underlying model</strong> with a larger, more diverse dataset that includes "hard negative" examples (e.g., organization names that resemble place names). Additionally, <strong>expanding the custom rule-based component</strong> to explicitly exclude certain patterns would further increase precision.`
             },
             mistral: {
+                label: 'Mistral',
                 metrics: { precision: 0.624, recall: 0.531, f1: 0.574 },
                 analysisTitle: "Analysis: Mistral (F1-Score: 0.574)",
-                analysisText: `For a zero-shot, prompt-based approach, this performance is quite promising and demonstrates the inherent geographical knowledge within LLMs. However, its lower recall suggests it is too conservative and misses many locations.`,
+                analysisText: `For a zero-shot, prompt-based approach, this performance is quite promising. It demonstrates the inherent geographical knowledge within Large Language Models. However, its lower recall and precision compared to spaCy suggest it is both too conservative (missing locations) and sometimes inaccurate.`,
                 improvementTitle: "Path to Improvement for Mistral",
-                improvementText: `The most direct path is through <strong>advanced prompt engineering</strong>, such as using a "few-shot" approach where the prompt includes several examples of correct extraction. For a more significant boost, <strong>fine-tuning the Mistral model</strong> on our specific NER dataset would adapt it to the task and likely yield substantial gains in both precision and recall.`
+                improvementText: `The most direct path is through <strong>advanced prompt engineering</strong>, such as providing examples within the prompt ("few-shot" learning). For a more significant boost, <strong>fine-tuning the Mistral model</strong> on our specific NER dataset would adapt it to the task's nuances and likely yield substantial gains in both precision and recall.`
             },
             bilstmcrf: {
+                label: 'BiLSTM-CRF',
                 metrics: { precision: 0.196, recall: 0.127, f1: 0.154 },
                 analysisTitle: "Analysis: BiLSTM-CRF (F1-Score: 0.154)",
-                analysisText: `The model's poor performance is not an indictment of the architecture itself, but rather a clear indication of its sensitivity to data quality and quantity. The model severely underperformed due to the highly imbalanced dataset where only ~1.3% of tokens are locations. Deep learning models like this require vast amounts of balanced data to learn effectively.`,
+                analysisText: `The model's poor performance is not an indictment of the architecture itself, but a clear indication of its sensitivity to data quality and quantity. The model severely underperformed due to the <strong>highly imbalanced dataset</strong> (only ~1.3% location tokens). Deep learning models like this require vast amounts of balanced data to learn distinguishing features effectively.`,
                 improvementTitle: "Path to Improvement for BiLSTM-CRF",
-                improvementText: `The architecture is sound; the problem is the data. The first step is to <strong>assemble a much larger and more balanced training corpus.</strong> Techniques like <strong>data augmentation</strong> (e.g., back-translation, replacing locations) should be employed to artificially increase the number of positive examples. Without a better dataset, hyperparameter tuning will not fix the core issue.`
+                improvementText: `The architecture is sound; the problem is the data. The first step is to <strong>assemble a much larger and more balanced training corpus.</strong> Techniques like <strong>data augmentation</strong> (e.g., back-translation, replacing locations with others from a gazetteer) should be employed to artificially increase the number of positive examples. Without a better dataset, no amount of hyperparameter tuning will fix the core issue.`
             }
         };
 
@@ -149,8 +217,10 @@
         let performanceChart;
 
         const chartColors = {
-            base: ['#D6C2B3', '#BFA695', '#A37F64'],
-            highlight: '#E53E3E'
+            precision: '#2563EB', // Blue
+            recall: '#14B8A6',    // Teal
+            f1: '#F97316',        // Orange
+            inactive: '#D1D5DB'   // Gray
         };
 
         const buttons = {
@@ -158,92 +228,74 @@
             mistral: document.getElementById('mistralBtn'),
             bilstmcrf: document.getElementById('bilstmcrfBtn')
         };
-
-        const detailElements = {
-            spacy: document.getElementById('spacyDetails'),
-            mistral: document.getElementById('mistralDetails'),
-            bilstmcrf: document.getElementById('bilstmcrfDetails')
-        };
         
-        const improvementPanel = document.getElementById('improvement-panel');
+        const analysisPanel = document.getElementById('analysis-content');
 
         function createChart(highlightedModel = null) {
-            const labels = ['Precision', 'Recall', 'F1-Score'];
-            const datasets = Object.keys(modelData).map((key, index) => {
-                const model = modelData[key];
-                return {
-                    label: key.toUpperCase().replace('BILSTMCRF', 'BiLSTM-CRF'),
-                    data: [model.metrics.precision, model.metrics.recall, model.metrics.f1],
-                    backgroundColor: key === highlightedModel ? chartColors.highlight : chartColors.base[index],
-                    borderColor: key === highlightedModel ? chartColors.highlight : chartColors.base[index],
-                    borderWidth: 1,
-                    borderRadius: 5,
-                };
-            });
-            
+            const chartData = {
+                labels: ['spaCy', 'Mistral', ['BiLSTM-CRF']],
+                datasets: [
+                    {
+                        label: 'Precision',
+                        data: Object.values(modelData).map(m => m.metrics.precision),
+                        backgroundColor: chartColors.precision,
+                    },
+                    {
+                        label: 'Recall',
+                        data: Object.values(modelData).map(m => m.metrics.recall),
+                        backgroundColor: chartColors.recall,
+                    },
+                    {
+                        label: 'F1-Score',
+                        data: Object.values(modelData).map(m => m.metrics.f1),
+                        backgroundColor: chartColors.f1,
+                    }
+                ]
+            };
+
             if (performanceChart) {
                 performanceChart.destroy();
             }
 
             performanceChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
+                data: chartData,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    indexAxis: 'y',
                     scales: {
-                        y: {
+                        x: {
                             beginAtZero: true,
                             max: 1.0,
-                            grid: {
-                                color: '#F0EBE6'
-                            },
-                            ticks: {
-                                color: '#6B7280'
-                            }
+                            grid: { color: '#E5E7EB' },
+                            ticks: { color: '#4B5563' }
                         },
-                        x: {
-                             grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#6B7280',
-                                font: {
-                                    size: 14
-                                }
-                            }
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#374151', font: { size: 14, weight: 500 } }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: {
-                                color: '#4A4A4A',
-                                font: {
-                                    size: 14,
-                                    weight: '500'
-                                }
-                            }
+                            position: 'bottom',
+                            labels: { color: '#374151', font: { size: 14 } }
                         },
                         tooltip: {
-                            backgroundColor: '#4A4A4A',
-                            titleFont: {
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                size: 12
-                            },
+                            enabled: true,
+                            backgroundColor: '#1F2937',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 4,
                             callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y.toFixed(3);
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
                                     }
                                     return label;
                                 }
@@ -260,29 +312,42 @@
             });
             buttons[modelKey].classList.add('active');
 
-            Object.keys(detailElements).forEach(key => {
-                detailElements[key].classList.add('hidden');
+            const selectedData = modelData[modelKey];
+            
+            analysisPanel.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.analysisTitle}</h3>
+                        <p class="text-base leading-relaxed text-gray-700">${selectedData.analysisText}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.improvementTitle}</h3>
+                        <p class="text-base leading-relaxed text-gray-700">${selectedData.improvementText}</p>
+                    </div>
+                </div>
+            `;
+            
+            performanceChart.data.datasets.forEach(dataset => {
+                dataset.backgroundColor = dataset.label === 'Precision' ? chartColors.precision :
+                                         dataset.label === 'Recall' ? chartColors.recall :
+                                         chartColors.f1;
             });
 
-            const selectedData = modelData[modelKey];
-            const detailElement = detailElements[modelKey];
-            
-            detailElement.innerHTML = `
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.analysisTitle}</h3>
-                <p class="text-base leading-relaxed text-gray-700">${selectedData.analysisText}</p>
-            `;
-            
-            improvementPanel.innerHTML = `
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">${selectedData.improvementTitle}</h3>
-                <p class="text-base leading-relaxed text-gray-700">${selectedData.improvementText}</p>
-            `;
-            
-            detailElement.classList.remove('hidden');
-            
-            createChart(); 
+            const modelIndex = Object.keys(modelData).indexOf(modelKey);
+            performanceChart.data.datasets.forEach(dataset => {
+                const colors = new Array(Object.keys(modelData).length).fill(chartColors.inactive);
+                colors[modelIndex] = dataset.label === 'Precision' ? chartColors.precision :
+                                     dataset.label === 'Recall' ? chartColors.recall :
+                                     chartColors.f1;
+                dataset.backgroundColor = colors;
+             });
+
+            performanceChart.update();
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            createChart();
+
             buttons.spacy.addEventListener('click', () => updateView('spacy'));
             buttons.mistral.addEventListener('click', () => updateView('mistral'));
             buttons.bilstmcrf.addEventListener('click', () => updateView('bilstmcrf'));
